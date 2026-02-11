@@ -1,0 +1,1636 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GALLANT - Patient Routing for Gallstone Disease</title>
+    
+    <!-- Favicons для различных устройств -->
+    <link rel="apple-touch-icon" sizes="180x180" href="https://raw.githubusercontent.com/igornoskov-debug/GBD-ICG/06c111119a723b9709ca5a6e93aae463bb1b4463/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="https://raw.githubusercontent.com/igornoskov-debug/GBD-ICG/06c111119a723b9709ca5a6e93aae463bb1b4463/favicon-96x96.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="https://raw.githubusercontent.com/igornoskov-debug/GBD-ICG/06c111119a723b9709ca5a6e93aae463bb1b4463/favicon-96x96.png">
+    <link rel="icon" type="image/svg+xml" href="https://raw.githubusercontent.com/igornoskov-debug/GBD-ICG/06c111119a723b9709ca5a6e93aae463bb1b4463/favicon.svg">
+    <link rel="shortcut icon" href="https://raw.githubusercontent.com/igornoskov-debug/GBD-ICG/06c111119a723b9709ca5a6e93aae463bb1b4463/favicon-96x96.png">
+    
+    <!-- Web App Manifest -->
+    <link rel="manifest" href="https://raw.githubusercontent.com/igornoskov-debug/GBD-ICG/06c111119a723b9709ca5a6e93aae463bb1b4463/site.webmanifest">
+    
+    <!-- Цвета темы для различных платформ -->
+    <meta name="theme-color" content="#2e7d32">
+    <meta name="msapplication-TileColor" content="#2e7d32">
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #2e7d32;
+            --primary-light: #4caf50;
+            --primary-dark: #1b5e20;
+            --secondary-color: #388e3c;
+            --text-color: #333;
+            --light-gray: #f5f5f5;
+            --medium-gray: #e0e0e0;
+            --dark-gray: #757575;
+            --white: #ffffff;
+            --shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            --border-radius: 10px;
+            --transition: all 0.3s ease;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--white);
+            color: var(--text-color);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        .container {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* Боковая панель */
+        .sidebar {
+            width: 280px;
+            background-color: var(--primary-color);
+            color: var(--white);
+            padding: 25px 0;
+            position: fixed;
+            height: 100vh;
+            overflow-y: auto;
+            transition: var(--transition);
+            z-index: 1000;
+            box-shadow: var(--shadow);
+        }
+
+        .sidebar-header {
+            text-align: center;
+            padding: 0 20px 25px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            margin-bottom: 20px;
+        }
+
+        .sidebar-logo {
+            width: 120px;
+            height: 120px;
+            margin: 0 auto 15px;
+            display: block;
+            cursor: pointer;
+            border-radius: 50%;
+            object-fit: contain;
+            background-color: white;
+            padding: 5px;
+            border: 2px solid white;
+        }
+
+        .app-name {
+            font-size: 1.4rem;
+            font-weight: 600;
+            letter-spacing: 1px;
+            cursor: pointer;
+        }
+
+        .nav-links {
+            list-style: none;
+            padding: 0 20px;
+        }
+
+        .nav-links li {
+            margin-bottom: 8px;
+        }
+
+        .nav-links a {
+            display: flex;
+            align-items: center;
+            padding: 14px 18px;
+            color: var(--white);
+            text-decoration: none;
+            border-radius: var(--border-radius);
+            transition: var(--transition);
+        }
+
+        .nav-links a i {
+            margin-right: 12px;
+            font-size: 1.1rem;
+            width: 24px;
+            text-align: center;
+        }
+
+        .nav-links a:hover, .nav-links a.active {
+            background-color: rgba(255, 255, 255, 0.15);
+            transform: translateX(5px);
+        }
+
+        /* Основной контент */
+        .main-content {
+            flex: 1;
+            margin-left: 280px;
+            transition: var(--transition);
+            padding-bottom: 80px;
+        }
+
+        /* Верхняя панель */
+        .top-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 30px;
+            background-color: var(--white);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .menu-toggle {
+            display: none;
+            background: none;
+            border: none;
+            color: var(--primary-color);
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+
+        .language-switcher {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .lang-btn {
+            background-color: var(--light-gray);
+            border: none;
+            padding: 8px 16px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: var(--transition);
+        }
+
+        .lang-btn.active {
+            background-color: var(--primary-color);
+            color: var(--white);
+        }
+
+        .version-toggle {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background-color: var(--light-gray);
+            padding: 6px 12px;
+            border-radius: 20px;
+        }
+
+        .version-btn {
+            background: none;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 15px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: var(--transition);
+        }
+
+        .version-btn.active {
+            background-color: var(--primary-color);
+            color: var(--white);
+        }
+
+        /* Страницы */
+        .page {
+            display: none;
+            padding: 30px;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .page.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .page-header {
+            margin-bottom: 30px;
+            border-bottom: 2px solid var(--primary-light);
+            padding-bottom: 15px;
+        }
+
+        .page-header h1 {
+            color: var(--primary-dark);
+            font-size: 2rem;
+            margin-bottom: 10px;
+        }
+
+        /* Главная страница */
+        .hero-section {
+            display: flex;
+            align-items: center;
+            gap: 40px;
+            margin-bottom: 40px;
+        }
+
+        .hero-logo {
+            width: 360px;
+            height: auto;
+            background-color: white;
+            border-radius: 15px;
+            padding: 10px;
+            box-shadow: var(--shadow);
+            object-fit: contain;
+        }
+
+        .hero-content {
+            flex: 1;
+        }
+
+        .hero-content h2 {
+            font-size: 2.2rem;
+            color: var(--primary-dark);
+            margin-bottom: 15px;
+        }
+
+        .start-section {
+            text-align: center;
+            padding: 40px;
+            background-color: var(--light-gray);
+            border-radius: var(--border-radius);
+            margin: 40px 0;
+        }
+
+        .start-btn {
+            background: linear-gradient(to right, var(--primary-color), var(--primary-light));
+            color: white;
+            border: none;
+            padding: 18px 40px;
+            font-size: 1.3rem;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: var(--transition);
+            box-shadow: 0 6px 20px rgba(46, 125, 50, 0.3);
+            margin-top: 20px;
+        }
+
+        .start-btn:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(46, 125, 50, 0.4);
+        }
+
+        .partner-logos {
+            display: flex;
+            justify-content: center;
+            gap: 40px;
+            margin: 50px 0 30px 0;
+            flex-wrap: wrap;
+        }
+
+        .partner-logo {
+            width: 250px;
+            height: auto;
+            object-fit: contain;
+        }
+
+        /* Страница выбора */
+        .options-page {
+            text-align: center;
+        }
+
+        .options-container {
+            display: flex;
+            justify-content: center;
+            gap: 40px;
+            margin-top: 40px;
+            flex-wrap: wrap;
+        }
+
+        .option-card {
+            background-color: var(--white);
+            border-radius: var(--border-radius);
+            padding: 40px 30px;
+            width: 320px;
+            box-shadow: var(--shadow);
+            transition: var(--transition);
+            cursor: pointer;
+            border: 2px solid transparent;
+        }
+
+        .option-card:hover {
+            transform: translateY(-10px);
+            border-color: var(--primary-color);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+        }
+
+        .option-icon {
+            font-size: 3.5rem;
+            color: var(--primary-color);
+            margin-bottom: 20px;
+        }
+
+        .option-card h3 {
+            font-size: 1.5rem;
+            margin-bottom: 15px;
+            color: var(--primary-dark);
+        }
+
+        /* Формы */
+        .criteria-form {
+            background-color: var(--white);
+            border-radius: var(--border-radius);
+            padding: 30px;
+            box-shadow: var(--shadow);
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+            padding-bottom: 25px;
+            border-bottom: 1px solid var(--medium-gray);
+        }
+
+        .form-group:last-child {
+            border-bottom: none;
+        }
+
+        .form-group h3 {
+            color: var(--primary-dark);
+            margin-bottom: 15px;
+            font-size: 1.3rem;
+        }
+
+        .radio-option, .checkbox-option {
+            display: flex;
+            align-items: center;
+            margin-bottom: 12px;
+            padding: 12px 15px;
+            border-radius: 8px;
+            transition: var(--transition);
+            cursor: pointer;
+        }
+
+        .radio-option:hover, .checkbox-option:hover {
+            background-color: rgba(46, 125, 50, 0.05);
+        }
+
+        .radio-option input, .checkbox-option input {
+            margin-right: 15px;
+            transform: scale(1.2);
+        }
+
+        .bmi-input {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            margin-top: 15px;
+            flex-wrap: wrap;
+        }
+
+        .bmi-input input {
+            padding: 10px 15px;
+            border: 1px solid var(--medium-gray);
+            border-radius: 6px;
+            width: 200px;
+        }
+
+        .bmi-calc-btn {
+            background-color: var(--primary-light);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .bmi-calc-btn:hover {
+            background-color: var(--primary-color);
+        }
+
+        .calculate-btn {
+            display: block;
+            margin: 40px auto 20px;
+            background: linear-gradient(to right, var(--primary-color), var(--primary-light));
+            color: white;
+            border: none;
+            padding: 16px 50px;
+            font-size: 1.2rem;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: var(--transition);
+            box-shadow: 0 6px 20px rgba(46, 125, 50, 0.3);
+        }
+
+        .calculate-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(46, 125, 50, 0.4);
+        }
+
+        /* Результаты */
+        .result-container {
+            max-width: 800px;
+            margin: 40px auto;
+            padding: 30px;
+            border-radius: var(--border-radius);
+            text-align: center;
+            display: none;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .result-container.show {
+            display: block;
+        }
+
+        .standard-result {
+            background-color: #e8f5e9;
+            border: 2px solid var(--primary-light);
+        }
+
+        .difficult-result {
+            background-color: #ffebee;
+            border: 2px solid #f44336;
+        }
+
+        .icg-recommended {
+            background-color: #e8f5e9;
+            border: 2px solid var(--primary-light);
+        }
+
+        .icg-not-recommended {
+            background-color: #fff3e0;
+            border: 2px solid #ff9800;
+        }
+
+        .result-score {
+            font-size: 3rem;
+            font-weight: 700;
+            margin: 20px 0;
+            color: var(--primary-dark);
+        }
+
+        .result-title {
+            font-size: 1.8rem;
+            margin-bottom: 15px;
+        }
+
+        .result-details {
+            font-size: 1.1rem;
+            line-height: 1.8;
+        }
+
+        .back-btn {
+            background-color: var(--light-gray);
+            color: var(--text-color);
+            border: none;
+            padding: 12px 30px;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: var(--transition);
+            margin-top: 20px;
+            font-weight: 500;
+        }
+
+        .back-btn:hover {
+            background-color: var(--medium-gray);
+        }
+
+        /* Страница авторов */
+        .authors-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 30px;
+            margin-top: 30px;
+        }
+
+        .author-card {
+            background-color: var(--white);
+            border-radius: var(--border-radius);
+            padding: 30px;
+            box-shadow: var(--shadow);
+            transition: var(--transition);
+        }
+
+        .author-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        }
+
+        .author-name {
+            font-size: 1.4rem;
+            color: var(--primary-dark);
+            margin-bottom: 10px;
+            border-bottom: 1px solid var(--medium-gray);
+            padding-bottom: 10px;
+        }
+
+        .author-title {
+            font-style: italic;
+            color: var(--dark-gray);
+            margin-bottom: 15px;
+        }
+
+        .contact-info {
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid var(--medium-gray);
+        }
+
+        .contact-info a {
+            color: var(--primary-color);
+            text-decoration: none;
+            transition: var(--transition);
+        }
+
+        .contact-info a:hover {
+            text-decoration: underline;
+        }
+
+        /* Футер */
+        .footer {
+            text-align: center;
+            padding: 25px;
+            background-color: var(--primary-dark);
+            color: var(--white);
+            margin-top: 20px;
+            width: 100%;
+        }
+
+        /* Адаптивность */
+        @media (max-width: 1024px) {
+            .sidebar {
+                transform: translateX(-100%);
+                width: 300px;
+            }
+            
+            .sidebar.active {
+                transform: translateX(0);
+            }
+            
+            .main-content {
+                margin-left: 0;
+            }
+            
+            .menu-toggle {
+                display: block;
+            }
+            
+            .top-bar {
+                justify-content: flex-start;
+                gap: 15px;
+                padding: 15px 20px;
+                flex-wrap: wrap;
+            }
+            
+            .hero-section {
+                flex-direction: column;
+                text-align: center;
+            }
+            
+            .hero-logo {
+                width: 280px;
+            }
+            
+            .partner-logos {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            /* Стили для мобильной версии */
+            .mobile-view .sidebar {
+                transform: translateX(-100%);
+                width: 100%;
+                max-width: 320px;
+            }
+            
+            .mobile-view .sidebar.active {
+                transform: translateX(0);
+            }
+            
+            .mobile-view .main-content {
+                margin-left: 0;
+                width: 100%;
+            }
+            
+            .mobile-view .top-bar {
+                padding: 10px 15px;
+                flex-direction: row;
+                flex-wrap: nowrap;
+                align-items: center;
+                justify-content: space-between;
+                gap: 10px;
+            }
+            
+            .mobile-view .page {
+                padding: 20px;
+            }
+            
+            .mobile-view .hero-logo {
+                width: 250px;
+            }
+            
+            /* Стили для кнопок переключения в мобильной версии */
+            .mobile-view .language-switcher {
+                order: 2;
+                flex: 0 1 auto;
+                background-color: var(--light-gray);
+                padding: 4px 6px;
+                border-radius: 20px;
+                gap: 5px;
+            }
+            
+            .mobile-view .version-toggle {
+                order: 3;
+                flex: 0 1 auto;
+                background-color: var(--light-gray);
+                padding: 4px 6px;
+                border-radius: 20px;
+                gap: 5px;
+            }
+            
+            .mobile-view .lang-btn,
+            .mobile-view .version-btn {
+                padding: 5px 10px;
+                font-size: 0.85rem;
+                min-width: 60px;
+                text-align: center;
+            }
+            
+            .mobile-view .version-toggle span[data-translate="version"] {
+                display: none;
+            }
+            
+            .mobile-view .version-btn i {
+                margin-right: 3px;
+                font-size: 0.8rem;
+            }
+            
+            .mobile-view .menu-toggle {
+                order: 1;
+                flex: 0 0 auto;
+                margin-right: 0;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .page {
+                padding: 20px;
+            }
+            
+            .options-container {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .option-card {
+                width: 100%;
+                max-width: 400px;
+            }
+            
+            .bmi-input {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            
+            .bmi-input input {
+                width: 100%;
+            }
+            
+            .authors-container {
+                grid-template-columns: 1fr;
+            }
+            
+            .language-switcher {
+                flex-wrap: wrap;
+            }
+            
+            .partner-logo {
+                width: 200px;
+            }
+            
+            /* Адаптация верхней панели для планшетов */
+            .top-bar {
+                flex-wrap: wrap;
+                gap: 10px;
+            }
+            
+            .version-toggle span[data-translate="version"] {
+                font-size: 0.9rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .hero-content h2 {
+                font-size: 1.8rem;
+            }
+            
+            .start-btn {
+                padding: 15px 30px;
+                font-size: 1.1rem;
+            }
+            
+            .option-card {
+                padding: 30px 20px;
+            }
+            
+            .criteria-form {
+                padding: 20px;
+            }
+            
+            .hero-logo {
+                width: 220px;
+            }
+            
+            /* Еще более компактные стили для маленьких экранов */
+            .mobile-view .top-bar {
+                padding: 8px 12px;
+            }
+            
+            .mobile-view .language-switcher,
+            .mobile-view .version-toggle {
+                padding: 3px 4px;
+            }
+            
+            .mobile-view .lang-btn,
+            .mobile-view .version-btn {
+                padding: 4px 8px;
+                font-size: 0.8rem;
+                min-width: 55px;
+            }
+            
+            .mobile-view .version-btn span {
+                display: none;
+            }
+            
+            .mobile-view .version-btn i {
+                margin-right: 0;
+                font-size: 0.9rem;
+            }
+            
+            .mobile-view .menu-toggle {
+                font-size: 1.3rem;
+            }
+            
+            /* Для очень маленьких экранов - скрываем текст кнопок версии, оставляем только иконки */
+            @media (max-width: 360px) {
+                .mobile-view .lang-btn {
+                    padding: 4px 6px;
+                    font-size: 0.75rem;
+                    min-width: 50px;
+                }
+                
+                .mobile-view .version-btn {
+                    padding: 4px 6px;
+                }
+                
+                .mobile-view .language-switcher,
+                .mobile-view .version-toggle {
+                    gap: 3px;
+                }
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Боковая панель -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <!-- Исправленная ссылка на логотип logo1.jpg -->
+                <img src="https://github.com/igornoskov-debug/GBD-ICG/blob/main/logo1.jpg?raw=true" alt="GALLANT Logo" class="sidebar-logo" id="logo-home">
+                <div class="app-name" id="app-name-link">GALLANT</div>
+            </div>
+            
+            <ul class="nav-links">
+                <li><a href="#" class="nav-link active" data-page="home"><i class="fas fa-home"></i> <span data-translate="home">Главная</span></a></li>
+                <li><a href="#" class="nav-link" data-page="options"><i class="fas fa-calculator"></i> <span data-translate="calculation">Расчет</span></a></li>
+                <li><a href="#" class="nav-link" data-page="prediction"><i class="fas fa-stethoscope"></i> <span data-translate="prediction">Прогноз трудной холецистэктомии</span></a></li>
+                <li><a href="#" class="nav-link" data-page="icg"><i class="fas fa-search"></i> <span data-translate="icgNavigation">Показания к ICG навигации</span></a></li>
+                <li><a href="#" class="nav-link" data-page="authors"><i class="fas fa-users"></i> <span data-translate="authors">Авторы</span></a></li>
+            </ul>
+        </aside>
+        
+        <!-- Основной контент -->
+        <main class="main-content" id="main-content">
+            <!-- Верхняя панель -->
+            <div class="top-bar">
+                <button class="menu-toggle" id="menu-toggle">
+                    <i class="fas fa-bars"></i>
+                </button>
+                
+                <div class="language-switcher">
+                    <button class="lang-btn active" id="lang-ru">Русский</button>
+                    <button class="lang-btn" id="lang-en">English</button>
+                </div>
+                
+                <div class="version-toggle">
+                    <span data-translate="version">Версия:</span>
+                    <button class="version-btn active" id="desktop-btn"><i class="fas fa-desktop"></i> <span data-translate="desktop">Десктоп</span></button>
+                    <button class="version-btn" id="mobile-btn"><i class="fas fa-mobile-alt"></i> <span data-translate="mobile">Смартфон</span></button>
+                </div>
+            </div>
+            
+            <!-- Страницы -->
+            <!-- Главная страница -->
+            <section class="page active" id="home-page">
+                <div class="page-header">
+                    <h1 data-translate="appName">GALLANT</h1>
+                    <p data-translate="appFullName">Gallstone Assessment & Logistical Leverage for Advanced Navigation Triage</p>
+                </div>
+                
+                <div class="hero-section">
+                    <!-- Исправленная ссылка на логотип logo1.jpg на главной странице -->
+                    <img src="https://github.com/igornoskov-debug/GBD-ICG/blob/main/logo1.jpg?raw=true" alt="GALLANT Logo" class="hero-logo">
+                    <div class="hero-content">
+                        <h2 data-translate="mainTitle">Маршрутизация пациентов с ЖКБ в Красноярском крае</h2>
+                        <p data-translate="description1">Данное приложение предназначено для прогнозирования «трудной» холецистэктомии и определения показаний к ICG навигации при плановой холецистэктомии у пациентов с желчнокаменной болезнью.</p>
+                        <p data-translate="description2">Разработано для хирургов Красноярского края, но может использоваться всеми специалистами с целью оптимизации предоперационной подготовки и выбора лечебного учреждения соответствующего уровня.</p>
+                    </div>
+                </div>
+                
+                <div class="start-section">
+                    <h2 data-translate="howToUse">Как пользоваться приложением</h2>
+                    <p data-translate="step1">1. Нажмите кнопку "Начать расчет" ниже</p>
+                    <p data-translate="step2">2. Выберите тип расчета: прогноз "трудной" холецистэктомии или показания к ICG навигации</p>
+                    <p data-translate="step3">3. Заполните необходимые параметры пациента</p>
+                    <p data-translate="step4">4. Получите результат с рекомендациями по маршрутизации</p>
+                    
+                    <button class="start-btn" id="start-btn" data-translate="startCalculation">Начать расчет</button>
+                </div>
+                
+                <div class="partner-logos">
+                    <!-- Замените ссылку на логотип КрасГМУ logo2.jpg -->
+                    <img src="https://github.com/igornoskov-debug/GBD-ICG/blob/main/logo2.jpg?raw=true" alt="КрасГМУ" class="partner-logo">
+                    <!-- Замените ссылку на логотип Краевой клинической больницы logo3.jpg -->
+                    <img src="https://github.com/igornoskov-debug/GBD-ICG/blob/main/logo3.jpg?raw=true" alt="Краевая клиническая больница" class="partner-logo">
+                </div>
+            </section>
+            
+            <!-- Страница выбора типа расчета -->
+            <section class="page" id="options-page">
+                <div class="page-header">
+                    <h1 data-translate="selectCalculationType">Выберите тип расчета</h1>
+                    <p data-translate="selectAlgorithm">Выберите необходимый алгоритм для определения маршрутизации пациента</p>
+                </div>
+                
+                <div class="options-container">
+                    <div class="option-card" id="prediction-option">
+                        <div class="option-icon">
+                            <i class="fas fa-procedures"></i>
+                        </div>
+                        <h3 data-translate="difficultCholecystectomyPrediction">Прогноз «трудной» холецистэктомии до операции</h3>
+                        <p data-translate="predictionDescription">Определение вероятности «трудной» холецистэктомии на основе клинических критериев для выбора уровня лечебного учреждения</p>
+                    </div>
+                    
+                    <div class="option-card" id="icg-option">
+                        <div class="option-icon">
+                            <i class="fas fa-syringe"></i>
+                        </div>
+                        <h3 data-translate="icgIndications">Определение показаний к ICG навигации</h3>
+                        <p data-translate="icgDescription">Оценка необходимости применения индоцианинового зеленого (ICG) для навигации во время холецистэктомии</p>
+                    </div>
+                </div>
+                
+                <button class="back-btn" id="back-from-options" data-translate="backToHome">Назад на главную</button>
+            </section>
+            
+            <!-- Страница прогноза трудной холецистэктомии -->
+            <section class="page" id="prediction-page">
+                <div class="page-header">
+                    <h1 data-translate="difficultCholecystectomyPrediction">Прогноз «трудной» холецистэктомии до операции</h1>
+                    <p data-translate="fillPatientData">Заполните данные пациента для расчета баллов и определения прогноза</p>
+                </div>
+                
+                <div class="criteria-form">
+                    <div class="form-group">
+                        <h3 data-translate="patientAge">Возраст пациента</h3>
+                        <div class="radio-option">
+                            <input type="radio" id="age-over55" name="age" value="1">
+                            <label for="age-over55" data-translate="over55Years">Более 55 лет (1 балл)</label>
+                        </div>
+                        <div class="radio-option">
+                            <input type="radio" id="age-under55" name="age" value="0" checked>
+                            <label for="age-under55" data-translate="55YearsOrLess">55 лет или менее (0 баллов)</label>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <h3 data-translate="bmi">Индекс массы тела (ИМТ)</h3>
+                        <div class="radio-option">
+                            <input type="radio" id="bmi-over30" name="bmi" value="2">
+                            <label for="bmi-over30" data-translate="bmiOver30">30 кг/м² и более (2 балла)</label>
+                        </div>
+                        <div class="radio-option">
+                            <input type="radio" id="bmi-under30" name="bmi" value="0" checked>
+                            <label for="bmi-under30" data-translate="bmiUnder30">Менее 30 кг/м² (0 баллов)</label>
+                        </div>
+                        
+                        <div class="bmi-input">
+                            <span data-translate="calculateBMI">Рассчитать ИМТ:</span>
+                            <input type="number" id="weight" placeholder="Вес (кг)" min="20" max="200">
+                            <input type="number" id="height" placeholder="Рост (см)" min="100" max="250">
+                            <button class="bmi-calc-btn" id="calculate-bmi" data-translate="calculateBMIButton">Рассчитать ИМТ</button>
+                            <div id="bmi-result"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <h3 data-translate="previousSurgeries">Перенесенные операции на органах брюшной полости</h3>
+                        <div class="radio-option">
+                            <input type="radio" id="surgery-yes" name="surgery" value="1">
+                            <label for="surgery-yes" data-translate="yes1Point">Да (1 балл)</label>
+                        </div>
+                        <div class="radio-option">
+                            <input type="radio" id="surgery-no" name="surgery" value="0" checked>
+                            <label for="surgery-no" data-translate="no0Points">Нет (0 баллов)</label>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <h3 data-translate="mechanicalJaundice">Механическая желтуха в анамнезе</h3>
+                        <div class="radio-option">
+                            <input type="radio" id="jaundice-yes" name="jaundice" value="1">
+                            <label for="jaundice-yes" data-translate="yes1Point">Да (1 балл)</label>
+                        </div>
+                        <div class="radio-option">
+                            <input type="radio" id="jaundice-no" name="jaundice" value="0" checked>
+                            <label for="jaundice-no" data-translate="no0Points">Нет (0 баллов)</label>
+                        </div>
+                    </div>
+                    
+                    <button class="calculate-btn" id="calculate-prediction" data-translate="calculatePrognosis">Рассчитать прогноз</button>
+                </div>
+                
+                <div class="result-container" id="prediction-result">
+                    <div class="result-score" id="prediction-score">0 баллов</div>
+                    <div class="result-title" id="prediction-title">Прогнозируемая «стандартная» холецистэктомия</div>
+                    <div class="result-details" id="prediction-details">
+                        <p data-translate="standardCholecystectomyText">Сумма баллов менее 4. Операция должна быть произведена на 1 и 2 уровне оказания медицинской помощи (Районная больница, Межрайонная больница).</p>
+                    </div>
+                    <button class="back-btn" id="back-from-prediction" data-translate="returnToCalculation">Вернуться к расчету</button>
+                </div>
+                
+                <button class="back-btn" id="back-to-options-prediction" data-translate="backToSelection">Назад к выбору расчета</button>
+            </section>
+            
+            <!-- Страница показаний к ICG навигации -->
+            <section class="page" id="icg-page">
+                <div class="page-header">
+                    <h1 data-translate="icgIndicationsTitle">Определение показаний к ICG навигации при холецистэктомии</h1>
+                    <p data-translate="icgInstructions">Выберите критерии, присутствующие у пациента. Наличие хотя бы одного критерия является показанием к проведению ICG навигации.</p>
+                </div>
+                
+                <div class="criteria-form">
+                    <div class="form-group">
+                        <h3 data-translate="icgCriteria">Критерии показаний к ICG навигации</h3>
+                        
+                        <div class="checkbox-option">
+                            <input type="checkbox" id="criteria1" name="icg-criteria" value="destructive">
+                            <label for="criteria1" data-translate="criteria1">Деструктивное поражение желчного пузыря со значительным утолщением его стенки</label>
+                        </div>
+                        
+                        <div class="checkbox-option">
+                            <input type="checkbox" id="criteria2" name="icg-criteria" value="age70">
+                            <label for="criteria2" data-translate="criteria2">Возраст пациентов старше 70 лет</label>
+                        </div>
+                        
+                        <div class="checkbox-option">
+                            <input type="checkbox" id="criteria3" name="icg-criteria" value="bleeding">
+                            <label for="criteria3" data-translate="criteria3">Кровотечение во время операции</label>
+                        </div>
+                        
+                        <div class="checkbox-option">
+                            <input type="checkbox" id="criteria4" name="icg-criteria" value="hartmann">
+                            <label for="criteria4" data-translate="criteria4">Фиксированный камень в кармане Гартмана</label>
+                        </div>
+                        
+                        <div class="checkbox-option">
+                            <input type="checkbox" id="criteria5" name="icg-criteria" value="cirrhosis">
+                            <label for="criteria5" data-translate="criteria5">Цирроз печени</label>
+                        </div>
+                        
+                        <div class="checkbox-option">
+                            <input type="checkbox" id="criteria6" name="icg-criteria" value="previous-surgery">
+                            <label for="criteria6" data-translate="criteria6">Ранее перенесенные хирургические вмешательства в верхних отделах брюшной полости и вариативность анатомии в зоне операции</label>
+                        </div>
+                        
+                        <div class="checkbox-option">
+                            <input type="checkbox" id="criteria7" name="icg-criteria" value="sclerosis">
+                            <label for="criteria7" data-translate="criteria7">Склероз желчного пузыря по данным дооперационного УЗИ</label>
+                        </div>
+                        
+                        <div class="checkbox-option">
+                            <input type="checkbox" id="criteria8" name="icg-criteria" value="jaundice-history">
+                            <label for="criteria8" data-translate="criteria8">Механическая желтуха в анамнезе</label>
+                        </div>
+                        
+                        <div class="checkbox-option">
+                            <input type="checkbox" id="criteria9" name="icg-criteria" value="hypertension">
+                            <label for="criteria9" data-translate="criteria9">Билиарная гипертензия в анамнезе без клиники желтухи</label>
+                        </div>
+                        
+                        <div class="checkbox-option">
+                            <input type="checkbox" id="criteria10" name="icg-criteria" value="recurrent">
+                            <label for="criteria10" data-translate="criteria10">Неоднократные приступы острого холецистита</label>
+                        </div>
+                        
+                        <div class="checkbox-option">
+                            <input type="checkbox" id="criteria11" name="icg-criteria" value="long-term">
+                            <label for="criteria11" data-translate="criteria11">Длительное камненосительство</label>
+                        </div>
+                    </div>
+                    
+                    <button class="calculate-btn" id="calculate-icg" data-translate="determineICGIndications">Определить показания к ICG</button>
+                </div>
+                
+                <div class="result-container" id="icg-result">
+                    <div class="result-title" id="icg-title">Не рекомендуется ICG навигация при холецистэктомии</div>
+                    <div class="result-details" id="icg-details">
+                        <p data-translate="noICGCriteria">Ни один из критериев показаний к ICG навигации не выбран.</p>
+                    </div>
+                    <button class="back-btn" id="back-from-icg" data-translate="returnToCalculation">Вернуться к расчету</button>
+                </div>
+                
+                <button class="back-btn" id="back-to-options-icg" data-translate="backToSelection">Назад к выбору расчета</button>
+            </section>
+            
+            <!-- Страница авторов -->
+            <section class="page" id="authors-page">
+                <div class="page-header">
+                    <h1 data-translate="authorsAndDevelopers">Авторы и разработчики</h1>
+                    <p data-translate="authorsInfo">Информация об авторах приложения GALLANT</p>
+                </div>
+                
+                <div class="authors-container">
+                    <div class="author-card">
+                        <div class="author-name">Cherdantsev Dmitry Vladimirovich</div>
+                        <div class="author-title" data-translate="professorTitle">Doctor of Medical Sciences, Professor</div>
+                        <p data-translate="cherdantsevBio">Head of the Department of Hospital Surgery named after Professor A.M. Dykhno with a course of PO FGBOU "KrasGMU named after prof. V.F. Voino-Yasenetsky", head of the surgical clinic of KGBUZ "Regional Clinical Hospital", chief freelance surgeon specialist of the Ministry of Health of the Krasnoyarsk Territory</p>
+                    </div>
+                    
+                    <div class="author-card">
+                        <div class="author-name">Gilaeva Daniya Ismailovna</div>
+                        <div class="author-title" data-translate="surgeonTitle">Surgeon of the highest qualification category</div>
+                        <p data-translate="gilaevaBio">Surgical Department No. 2 of KGBUZ "Regional Clinical Hospital"</p>
+                    </div>
+                    
+                    <div class="author-card">
+                        <div class="author-name">Noskov Igor Gennadievich</div>
+                        <div class="author-title" data-translate="associateProfessorTitle">Candidate of Medical Sciences, Associate Professor</div>
+                        <p data-translate="noskovBio">Associate Professor of the Department of Hospital Surgery named after Professor A.M. Dykhno with a course of PO FGBOU "KrasGMU named after prof. V.F. Voino-Yasenetsky", surgeon of Surgical Department No. 1 of KGBUZ "Regional Clinical Hospital", highest qualification category</p>
+                    </div>
+                </div>
+                
+                <div class="contact-info">
+                    <h3 data-translate="contactInfo">Контактная информация:</h3>
+                    <p><i class="fas fa-envelope"></i> d.gilaeva@yandex.ru</p>
+                    <p><i class="fas fa-envelope"></i> igornoskov@mail.ru</p>
+                </div>
+                
+                <button class="back-btn" id="back-to-home-authors" data-translate="backToHome">Назад на главную</button>
+            </section>
+            
+            <!-- Футер -->
+            <footer class="footer">
+                <p data-translate="copyright">© Носков И.Г., разработка и дизайн, 2026 г.</p>
+            </footer>
+        </main>
+    </div>
+
+    <script>
+        // Элементы DOM
+        const sidebar = document.getElementById('sidebar');
+        const menuToggle = document.getElementById('menu-toggle');
+        const mainContent = document.getElementById('main-content');
+        const navLinks = document.querySelectorAll('.nav-link');
+        const pages = document.querySelectorAll('.page');
+        const langButtons = document.querySelectorAll('.lang-btn');
+        const versionButtons = document.querySelectorAll('.version-btn');
+        
+        // Текущий язык
+        let currentLang = 'ru';
+        
+        // Текущая версия (десктоп/мобильная)
+        let currentVersion = 'desktop';
+        
+        // Переводы на английский и русский языки
+        const translations = {
+            'ru': {
+                // Навигация
+                'home': 'Главная',
+                'calculation': 'Расчет',
+                'prediction': 'Прогноз трудной холецистэктомии',
+                'icgNavigation': 'Показания к ICG навигации',
+                'authors': 'Авторы',
+                
+                // Верхняя панель
+                'version': 'Версия:',
+                'desktop': 'Десктоп',
+                'mobile': 'Смартфон',
+                
+                // Главная страница
+                'appName': 'GALLANT',
+                'appFullName': 'Gallstone Assessment & Logistical Leverage for Advanced Navigation Triage',
+                'mainTitle': 'Маршрутизация пациентов с ЖКБ в Красноярском крае',
+                'description1': 'Данное приложение предназначено для прогнозирования «трудной» холецистэктомии и определения показаний к ICG навигации при плановой холецистэктомии у пациентов с желчнокаменной болезнью.',
+                'description2': 'Разработано для хирургов Красноярского края, но может использоваться всеми специалистами с целью оптимизации предоперационной подготовки и выбора лечебного учреждения соответствующего уровня.',
+                'howToUse': 'Как пользоваться приложением',
+                'step1': '1. Нажмите кнопку "Начать расчет" ниже',
+                'step2': '2. Выберите тип расчета: прогноз "трудной" холецистэктомии или показания к ICG навигации',
+                'step3': '3. Заполните необходимые параметры пациента',
+                'step4': '4. Получите результат с рекомендациями по маршрутизации',
+                'startCalculation': 'Начать расчет',
+                
+                // Страница выбора
+                'selectCalculationType': 'Выберите тип расчета',
+                'selectAlgorithm': 'Выберите необходимый алгоритм для определения маршрутизации пациента',
+                'difficultCholecystectomyPrediction': 'Прогноз «трудной» холецистэктомии до операции',
+                'predictionDescription': 'Определение вероятности «трудной» холецистэктомии на основе клинических критериев для выбора уровня лечебного учреждения',
+                'icgIndications': 'Определение показаний к ICG навигации',
+                'icgDescription': 'Оценка необходимости применения индоцианинового зеленого (ICG) для навигации во время холецистэктомии',
+                'backToHome': 'Назад на главную',
+                
+                // Страница прогноза
+                'fillPatientData': 'Заполните данные пациента для расчета баллов и определения прогноза',
+                'patientAge': 'Возраст пациента',
+                'over55Years': 'Более 55 лет (1 балл)',
+                '55YearsOrLess': '55 лет или менее (0 баллов)',
+                'bmi': 'Индекс массы тела (ИМТ)',
+                'bmiOver30': '30 кг/м² и более (2 балла)',
+                'bmiUnder30': 'Менее 30 кг/м² (0 баллов)',
+                'calculateBMI': 'Рассчитать ИМТ:',
+                'calculateBMIButton': 'Рассчитать ИМТ',
+                'previousSurgeries': 'Перенесенные операции на органах брюшной полости',
+                'yes1Point': 'Да (1 балл)',
+                'no0Points': 'Нет (0 баллов)',
+                'mechanicalJaundice': 'Механическая желтуха в анамнезе',
+                'calculatePrognosis': 'Рассчитать прогноз',
+                'standardCholecystectomyText': 'Сумма баллов менее 4. Операция должна быть произведена на 1 и 2 уровне оказания медицинской помощи (Районная больница, Межрайонная больница).',
+                'difficultCholecystectomyText': 'Сумма баллов 4 и более. Пациент должен быть направлен в учреждение 3 уровня – Краевая клиническая больница и ему необходимо выполнить МР-холангиографию перед операцией.',
+                'returnToCalculation': 'Вернуться к расчету',
+                'backToSelection': 'Назад к выбору расчета',
+                
+                // Страница ICG
+                'icgIndicationsTitle': 'Определение показаний к ICG навигации при холецистэктомии',
+                'icgInstructions': 'Выберите критерии, присутствующие у пациента. Наличие хотя бы одного критерия является показанием к проведению ICG навигации.',
+                'icgCriteria': 'Критерии показаний к ICG навигации',
+                'criteria1': 'Деструктивное поражение желчного пузыря со значительным утолщением его стенки',
+                'criteria2': 'Возраст пациентов старше 70 лет',
+                'criteria3': 'Кровотечение во время операции',
+                'criteria4': 'Фиксированный камень в кармане Гартмана',
+                'criteria5': 'Цирроз печени',
+                'criteria6': 'Ранее перенесенные хирургические вмешательства в верхних отделах брюшной полости и вариативность анатомии в зоне операции',
+                'criteria7': 'Склероз желчного пузыря по данным дооперационного УЗИ',
+                'criteria8': 'Механическая желтуха в анамнезе',
+                'criteria9': 'Билиарная гипертензия в анамнезе без клиники желтухи',
+                'criteria10': 'Неоднократные приступы острого холецистита',
+                'criteria11': 'Длительное камненосительство',
+                'determineICGIndications': 'Определить показания к ICG',
+                'icgRecommended': 'Рекомендуется ICG навигация при холецистэктомии',
+                'icgNotRecommended': 'Не рекомендуется ICG навигация при холецистэктомии',
+                'noICGCriteria': 'Ни один из критериев показаний к ICG навигации не выбран.',
+                
+                // Страница авторов
+                'authorsAndDevelopers': 'Авторы и разработчики',
+                'authorsInfo': 'Информация об авторах приложения GALLANT',
+                'professorTitle': 'Доктор медицинских наук, профессор',
+                'surgeonTitle': 'Врач-хирург высшей квалификационной категории',
+                'associateProfessorTitle': 'Кандидат медицинских наук, доцент',
+                'cherdantsevBio': 'Заведующий кафедрой госпитальной хирургии имени профессора А.М.Дыхно с курсом ПО ФГБОУ «КрасГМУ им.проф.В.Ф.Войно-Ясенецкого», руководитель хирургической клиники КГБУЗ «Краевая клиническая больница», главный внештатный специалист хирург Министерства здравоохранения Красноярского края',
+                'gilaevaBio': 'Хирургическое отделение № 2 КГБУЗ «Краевая клиническая больница»',
+                'noskovBio': 'Доцент кафедры госпитальной хирургии имени профессора А.М.Дыхно с курсом ПО ФГБОУ «КрасГМУ им.проф.В.Ф.Войно-Ясенецкого», врач-хирург хирургического отделения № 1 КГБУЗ «Краевая клиническая больница», высшая квалификационная категория',
+                'contactInfo': 'Контактная информация:',
+                
+                // Футер
+                'copyright': '© Носков И.Г., разработка и дизайн, 2026 г.',
+                
+                // Результаты
+                'points': 'баллов',
+                'standardCholecystectomy': 'Прогнозируемая «стандартная» холецистэктомия',
+                'difficultCholecystectomy': 'Прогнозируемая «трудная» холецистэктомия'
+            },
+            'en': {
+                // Navigation
+                'home': 'Home',
+                'calculation': 'Calculation',
+                'prediction': 'Prediction of Difficult Cholecystectomy',
+                'icgNavigation': 'Indications for ICG Navigation',
+                'authors': 'Authors',
+                
+                // Top bar
+                'version': 'Version:',
+                'desktop': 'Desktop',
+                'mobile': 'Smartphone',
+                
+                // Home page
+                'appName': 'GALLANT',
+                'appFullName': 'Gallstone Assessment & Logistical Leverage for Advanced Navigation Triage',
+                'mainTitle': 'Patient Routing for Gallstone Disease in Krasnoyarsk Territory',
+                'description1': 'This application is designed for preoperative prediction of "difficult" cholecystectomy and determination of indications for ICG navigation in patients with cholelithiasis undergoing elective cholecystectomy.',
+                'description2': 'Developed for surgeons in the Krasnoyarsk Territory, but can be utilized by all specialists to optimize preoperative preparation and select the appropriate level of healthcare facility.',
+                'howToUse': 'How to Use the Application',
+                'step1': '1. Click the "Start Calculation" button below',
+                'step2': '2. Select calculation type: prediction of "difficult" cholecystectomy or indications for ICG navigation',
+                'step3': '3. Fill in the required patient parameters',
+                'step4': '4. Obtain results with routing recommendations',
+                'startCalculation': 'Start Calculation',
+                
+                // Options page
+                'selectCalculationType': 'Select Calculation Type',
+                'selectAlgorithm': 'Select the required algorithm for determining patient routing',
+                'difficultCholecystectomyPrediction': 'Prediction of "Difficult" Cholecystectomy Before Surgery',
+                'predictionDescription': 'Determination of the probability of "difficult" cholecystectomy based on clinical criteria for selecting the level of medical institution',
+                'icgIndications': 'Determination of Indications for ICG Navigation',
+                'icgDescription': 'Assessment of the necessity for indocyanine green (ICG) application for navigation during cholecystectomy',
+                'backToHome': 'Back to Home',
+                
+                // Prediction page
+                'fillPatientData': 'Fill in patient data to calculate points and determine prognosis',
+                'patientAge': 'Patient Age',
+                'over55Years': 'Over 55 years (1 point)',
+                '55YearsOrLess': '55 years or less (0 points)',
+                'bmi': 'Body Mass Index (BMI)',
+                'bmiOver30': '30 kg/m² or more (2 points)',
+                'bmiUnder30': 'Less than 30 kg/m² (0 points)',
+                'calculateBMI': 'Calculate BMI:',
+                'calculateBMIButton': 'Calculate BMI',
+                'previousSurgeries': 'Previous Abdominal Surgeries',
+                'yes1Point': 'Yes (1 point)',
+                'no0Points': 'No (0 points)',
+                'mechanicalJaundice': 'History of Mechanical Jaundice',
+                'calculatePrognosis': 'Calculate Prognosis',
+                'standardCholecystectomyText': 'Total score less than 4. The surgery should be performed at levels 1 and 2 of medical care (District Hospital, Interdistrict Hospital).',
+                'difficultCholecystectomyText': 'Total score 4 or more. The patient should be referred to a level 3 institution - Regional Clinical Hospital and should undergo MR-cholangiography before surgery.',
+                'returnToCalculation': 'Return to Calculation',
+                'backToSelection': 'Back to Selection',
+                
+                // ICG page
+                'icgIndicationsTitle': 'Determination of Indications for ICG Navigation in Cholecystectomy',
+                'icgInstructions': 'Select criteria present in the patient. The presence of at least one criterion indicates the need for ICG navigation.',
+                'icgCriteria': 'Criteria for ICG Navigation Indications',
+                'criteria1': 'Destructive lesion of the gallbladder with significant wall thickening',
+                'criteria2': 'Patient age over 70 years',
+                'criteria3': 'Intraoperative bleeding',
+                'criteria4': 'Fixed stone in Hartmann\'s pouch',
+                'criteria5': 'Liver cirrhosis',
+                'criteria6': 'Previous surgical interventions in the upper abdominal cavity and anatomical variability in the operative field',
+                'criteria7': 'Gallbladder sclerosis according to preoperative ultrasound',
+                'criteria8': 'History of mechanical jaundice',
+                'criteria9': 'History of biliary hypertension without clinical jaundice',
+                'criteria10': 'Recurrent attacks of acute cholecystitis',
+                'criteria11': 'Long-term stone carriage',
+                'determineICGIndications': 'Determine ICG Indications',
+                'icgRecommended': 'ICG navigation is recommended for cholecystectomy',
+                'icgNotRecommended': 'ICG navigation is not recommended for cholecystectomy',
+                'noICGCriteria': 'None of the ICG navigation indication criteria are selected.',
+                
+                // Authors page
+                'authorsAndDevelopers': 'Authors and Developers',
+                'authorsInfo': 'Information about the authors of the GALLANT application',
+                'professorTitle': 'Doctor of Medical Sciences, Professor',
+                'surgeonTitle': 'Surgeon of the highest qualification category',
+                'associateProfessorTitle': 'Candidate of Medical Sciences, Associate Professor',
+                'cherdantsevBio': 'Head of the Department of Hospital Surgery named after Professor A.M. Dykhno with a course of PO FGBOU "KrasGMU named after prof. V.F. Voino-Yasenetsky", head of the surgical clinic of KGBUZ "Regional Clinical Hospital", chief freelance surgeon specialist of the Ministry of Health of the Krasnoyarsk Territory',
+                'gilaevaBio': 'Surgical Department No. 2 of KGBUZ "Regional Clinical Hospital"',
+                'noskovBio': 'Associate Professor of the Department of Hospital Surgery named after Professor A.M. Dykhno with a course of PO FGBOU "KrasGMU named after prof. V.F. Voino-Yasenetsky", surgeon of Surgical Department No. 1 of KGBUZ "Regional Clinical Hospital", highest qualification category',
+                'contactInfo': 'Contact Information:',
+                
+                // Footer
+                'copyright': '© Noskov I.G., development and design, 2026',
+                
+                // Results
+                'points': 'points',
+                'standardCholecystectomy': 'Predicted "Standard" Cholecystectomy',
+                'difficultCholecystectomy': 'Predicted "Difficult" Cholecystectomy'
+            }
+        };
+        
+        // Функция для перевода страницы
+        function translatePage(lang) {
+            // Обновляем все элементы с атрибутом data-translate
+            const elements = document.querySelectorAll('[data-translate]');
+            elements.forEach(element => {
+                const key = element.getAttribute('data-translate');
+                if (translations[lang] && translations[lang][key]) {
+                    element.textContent = translations[lang][key];
+                }
+            });
+            
+            // Обновляем placeholder для полей ввода
+            if (lang === 'en') {
+                document.getElementById('weight').placeholder = 'Weight (kg)';
+                document.getElementById('height').placeholder = 'Height (cm)';
+            } else {
+                document.getElementById('weight').placeholder = 'Вес (кг)';
+                document.getElementById('height').placeholder = 'Рост (см)';
+            }
+            
+            // Обновляем результаты, если они отображены
+            updateResultsTranslation(lang);
+        }
+        
+        // Функция для обновления перевода результатов
+        function updateResultsTranslation(lang) {
+            const predictionResult = document.getElementById('prediction-result');
+            const icgResult = document.getElementById('icg-result');
+            
+            // Обновляем результаты прогноза холецистэктомии
+            if (predictionResult.classList.contains('show')) {
+                const score = document.getElementById('prediction-score').textContent.split(' ')[0];
+                document.getElementById('prediction-score').textContent = `${score} ${translations[lang]['points']}`;
+                
+                const isDifficult = document.getElementById('prediction-title').textContent.includes('трудная') || document.getElementById('prediction-title').textContent.includes('Difficult');
+                document.getElementById('prediction-title').textContent = translations[lang][isDifficult ? 'difficultCholecystectomy' : 'standardCholecystectomy'];
+                
+                document.getElementById('prediction-details').innerHTML = `<p>${translations[lang][isDifficult ? 'difficultCholecystectomyText' : 'standardCholecystectomyText']}</p>`;
+            }
+            
+            // Обновляем результаты ICG
+            if (icgResult.classList.contains('show')) {
+                const isRecommended = document.getElementById('icg-title').textContent.includes('Рекомендуется') || document.getElementById('icg-title').textContent.includes('recommended');
+                document.getElementById('icg-title').textContent = translations[lang][isRecommended ? 'icgRecommended' : 'icgNotRecommended'];
+                
+                if (!isRecommended) {
+                    document.getElementById('icg-details').innerHTML = `<p>${translations[lang]['noICGCriteria']}</p>`;
+                }
+            }
+        }
+        
+        // Переключение бокового меню на мобильных устройствах
+        menuToggle.addEventListener('click', (e) => {
+            e.stopPropagation(); // Предотвращаем всплытие события
+            sidebar.classList.toggle('active');
+        });
+        
+        // Функция для показа страницы
+        function showPage(pageName) {
+            // Скрываем все страницы
+            pages.forEach(page => page.classList.remove('active'));
+            // Показываем выбранную страницу
+            document.getElementById(pageName + '-page').classList.add('active');
+            
+            // Обновляем активную ссылку в навигации
+            navLinks.forEach(item => item.classList.remove('active'));
+            document.querySelector(`.nav-link[data-page="${pageName}"]`).classList.add('active');
+            
+            // На мобильных устройствах скрываем боковую панель
+            if (window.innerWidth <= 1024 || currentVersion === 'mobile') {
+                sidebar.classList.remove('active');
+            }
+            
+            // Прокручиваем к началу страницы
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+        
+        // Навигация по боковой панели
+        navLinks.forEach(link => {
+            link.addEventListener('click', (e) => {
+                e.preventDefault();
+                const pageName = link.getAttribute('data-page');
+                showPage(pageName);
+            });
+        });
+        
+        // Переход на главную страницу по логотипу
+        document.getElementById('logo-home').addEventListener('click', () => {
+            showPage('home');
+        });
+        
+        document.getElementById('app-name-link').addEventListener('click', () => {
+            showPage('home');
+        });
+        
+        // Кнопка "Начать расчет" на главной странице
+        document.getElementById('start-btn').addEventListener('click', () => {
+            showPage('options');
+        });
+        
+        // Кнопки возврата
+        document.getElementById('back-from-options').addEventListener('click', () => {
+            showPage('home');
+        });
+        
+        document.getElementById('back-from-prediction').addEventListener('click', () => {
+            document.getElementById('prediction-result').classList.remove('show');
+        });
+        
+        document.getElementById('back-to-options-prediction').addEventListener('click', () => {
+            showPage('options');
+        });
+        
+        document.getElementById('back-from-icg').addEventListener('click', () => {
+            document.getElementById('icg-result').classList.remove('show');
+        });
+        
+        document.getElementById('back-to-options-icg').addEventListener('click', () => {
+            showPage('options');
+        });
+        
+        document.getElementById('back-to-home-authors').addEventListener('click', () => {
+            showPage('home');
+        });
+        
+        // Выбор типа расчета
+        document.getElementById('prediction-option').addEventListener('click', () => {
+            showPage('prediction');
+        });
+        
+        document.getElementById('icg-option').addEventListener('click', () => {
+            showPage('icg');
+        });
+        
+        // Расчет ИМТ
+        document.getElementById('calculate-bmi').addEventListener('click', () => {
+            const weight = parseFloat(document.getElementById('weight').value);
+            const height = parseFloat(document.getElementById('height').value);
+            
+            if (weight && height && height > 0) {
+                const heightM = height / 100;
+                const bmi = weight / (heightM * heightM);
+                const bmiResult = document.getElementById('bmi-result');
+                
+                if (currentLang === 'en') {
+                    bmiResult.innerHTML = `BMI = ${bmi.toFixed(1)} kg/m²`;
+                } else {
+                    bmiResult.innerHTML = `ИМТ = ${bmi.toFixed(1)} кг/м²`;
+                }
+                
+                // Автоматически выбираем соответствующую радиокнопку
+                if (bmi >= 30) {
+                    document.getElementById('bmi-over30').checked = true;
+                } else {
+                    document.getElementById('bmi-under30').checked = true;
+                }
+            } else {
+                if (currentLang === 'en') {
+                    alert('Please enter correct weight and height values');
+                } else {
+                    alert('Пожалуйста, введите корректные значения веса и роста');
+                }
+            }
+        });
+        
+        // Расчет прогноза трудной холецистэктомии
+        document.getElementById('calculate-prediction').addEventListener('click', () => {
+            let score = 0;
+            
+            // Возраст
+            const ageValue = document.querySelector('input[name="age"]:checked').value;
+            score += parseInt(ageValue);
+            
+            // ИМТ
+            const bmiValue = document.querySelector('input[name="bmi"]:checked').value;
+            score += parseInt(bmiValue);
+            
+            // Операции
+            const surgeryValue = document.querySelector('input[name="surgery"]:checked').value;
+            score += parseInt(surgeryValue);
+            
+            // Желтуха
+            const jaundiceValue = document.querySelector('input[name="jaundice"]:checked').value;
+            score += parseInt(jaundiceValue);
+            
+            // Отображение результата
+            const resultContainer = document.getElementById('prediction-result');
+            const resultScore = document.getElementById('prediction-score');
+            const resultTitle = document.getElementById('prediction-title');
+            const resultDetails = document.getElementById('prediction-details');
+            
+            if (currentLang === 'en') {
+                resultScore.textContent = `${score} ${translations['en']['points']}`;
+            } else {
+                resultScore.textContent = `${score} ${translations['ru']['points']}`;
+            }
+            
+            if (score >= 4) {
+                resultTitle.textContent = currentLang === 'en' ? translations['en']['difficultCholecystectomy'] : translations['ru']['difficultCholecystectomy'];
+                resultDetails.innerHTML = `<p>${currentLang === 'en' ? translations['en']['difficultCholecystectomyText'] : translations['ru']['difficultCholecystectomyText']}</p>`;
+                resultContainer.className = 'result-container show difficult-result';
+            } else {
+                resultTitle.textContent = currentLang === 'en' ? translations['en']['standardCholecystectomy'] : translations['ru']['standardCholecystectomy'];
+                resultDetails.innerHTML = `<p>${currentLang === 'en' ? translations['en']['standardCholecystectomyText'] : translations['ru']['standardCholecystectomyText']}</p>`;
+                resultContainer.className = 'result-container show standard-result';
+            }
+            
+            // Прокручиваем к результату
+            resultContainer.scrollIntoView({ behavior: 'smooth' });
+        });
+        
+        // Определение показаний к ICG навигации
+        document.getElementById('calculate-icg').addEventListener('click', () => {
+            const criteria = document.querySelectorAll('input[name="icg-criteria"]:checked');
+            const resultContainer = document.getElementById('icg-result');
+            const resultTitle = document.getElementById('icg-title');
+            const resultDetails = document.getElementById('icg-details');
+            
+            if (criteria.length > 0) {
+                resultTitle.textContent = currentLang === 'en' ? translations['en']['icgRecommended'] : translations['ru']['icgRecommended'];
+                
+                let criteriaList = currentLang === 'en' ? 'Selected criteria:' : 'Выбраны следующие критерии:';
+                criteriaList += '<ul>';
+                criteria.forEach(criterion => {
+                    const label = document.querySelector(`label[for="${criterion.id}"]`).textContent;
+                    criteriaList += `<li>${label}</li>`;
+                });
+                criteriaList += '</ul>';
+                
+                resultDetails.innerHTML = criteriaList;
+                resultContainer.className = 'result-container show icg-recommended';
+            } else {
+                resultTitle.textContent = currentLang === 'en' ? translations['en']['icgNotRecommended'] : translations['ru']['icgNotRecommended'];
+                resultDetails.innerHTML = `<p>${currentLang === 'en' ? translations['en']['noICGCriteria'] : translations['ru']['noICGCriteria']}</p>`;
+                resultContainer.className = 'result-container show icg-not-recommended';
+            }
+            
+            // Прокручиваем к результату
+            resultContainer.scrollIntoView({ behavior: 'smooth' });
+        });
+        
+        // Переключение языка
+        langButtons.forEach(btn => {
+            btn.addEventListener('click', () => {
+                // Убираем активный класс у всех кнопок
+                langButtons.forEach(b => b.classList.remove('active'));
+                // Добавляем активный класс текущей кнопке
+                btn.classList.add('active');
+                
+                // Устанавливаем текущий язык
+                currentLang = btn.id === 'lang-ru' ? 'ru' : 'en';
+                
+                // Переводим страницу
+                translatePage(currentLang);
+            });
+        });
+        
+        // Переключение между десктопом и мобильной версией
+        versionButtons.forEach(btn => {
+            btn.addEventListener('click', () => {
+                // Убираем активный класс у всех кнопок
+                versionButtons.forEach(b => b.classList.remove('active'));
+                // Добавляем активный класс текущей кнопке
+                btn.classList.add('active');
+                
+                // Устанавливаем текущую версию
+                currentVersion = btn.id === 'desktop-btn' ? 'desktop' : 'mobile';
+                
+                // Применяем соответствующие стили
+                if (currentVersion === 'mobile') {
+                    document.body.classList.add('mobile-view');
+                    // На мобильной версии скрываем боковую панель
+                    sidebar.classList.remove('active');
+                } else {
+                    document.body.classList.remove('mobile-view');
+                    // На десктопе показываем боковую панель
+                    if (window.innerWidth > 1024) {
+                        sidebar.classList.add('active');
+                    }
+                }
+                
+                // Принудительно обновляем отображение верхней панели
+                setTimeout(() => {
+                    window.dispatchEvent(new Event('resize'));
+                }, 100);
+            });
+        });
+        
+        // Закрытие бокового меню при клике на основное содержимое на мобильных устройствах
+        mainContent.addEventListener('click', () => {
+            if ((window.innerWidth <= 1024 || currentVersion === 'mobile') && sidebar.classList.contains('active')) {
+                sidebar.classList.remove('active');
+            }
+        });
+        
+        // Обработка изменения размера окна
+        window.addEventListener('resize', () => {
+            if (window.innerWidth > 1024 && currentVersion !== 'mobile') {
+                // На больших экранах и в десктопной версии показываем боковую панель
+                sidebar.classList.add('active');
+            } else {
+                // На мобильных или в мобильной версии скрываем
+                sidebar.classList.remove('active');
+            }
+        });
+        
+        // Инициализация при загрузке
+        document.addEventListener('DOMContentLoaded', () => {
+            // Показываем боковую панель на десктопах
+            if (window.innerWidth > 1024) {
+                sidebar.classList.add('active');
+            }
+            
+            // Устанавливаем начальный язык
+            currentLang = 'ru';
+            translatePage('ru');
+            
+            // Устанавливаем начальную версию
+            currentVersion = 'desktop';
+        });
+    </script>
+</body>
+</html>
